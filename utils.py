@@ -166,7 +166,22 @@ class Operations:
 
 class GoogleSheets:
     # Path to your downloaded service account key
-    SERVICE_CRED_DICT = json.loads(os.environ["GOOGLE_CREDS_JSON"])
+    """
+    SERVICE_CRED_DICT = {
+    "type": "service_account",
+    "project_id": "wp-automation-475117",
+    "private_key_id": "1ddfd3a16247cc677aba8c11c5b546ae24c02e3f",
+    "private_key": "-----BEGIN PRIVATE KEY-----\nMIIEvgIBADANBgkqhkiG9w0BAQEFAASCBKgwggSkAgEAAoIBAQDQVLZrqBeI8www\nZl/3HJHn/h9Gjs9UnwB2Hqc29Fg2+dmPxuTwE392qNH9ZbhXEqSJrOWhjdmGwC7u\nxfZtVSgcit0CNv2khsdAvVy5uSd3nGws6PvCaVpNziiaYnvNfQifDU/rTY0xqklz\nIzKf3Its3+V/p4tGvTWFYlv7RtuRxMNpbmv23fOUMbMa13wsYk3SIJUinS/LrO0x\nlAU+10VLvlM6Aghg95CFduu4xG7X1L1iCBpAx/3ySThY3jk7/ls/KS7DzultEJYJ\nrZVC4WKkLno8HwJ8eg/VWbYq7/D6kk8Tz+Do+oKo7nJLf+8yesVlIYScGKiL+sk7\nJHYRfoD7AgMBAAECggEACuesRtVdKgOC61OoiVBbCNhB/dkC3EyYYxZ2rUc8COCq\nNT71g+WZYfYzS77T1+b3aud8e6jnroiHzGLbY9y1xUy1heSoAUE209o1rNkWykmL\nVgx6BTKrkfANKwulrFtzpJO3T7tW/TcLMjYw87JBMBlGM5jrDvBfiVRdOTl7y9T3\nGTpXojOcgEY12PfkZoDtbbhPAPYRE7A9fpKNUSxoj3KNCiHsGNVzx+a3cMMF/5KE\nG2DPRQ4bjm2ljsL4TpordewHFOH/KPyJkAcPH8qh+nI8dq1vFZQYiztGqmGlS9eA\nhD51DzMxG5fbNcbG5RU9CjhS85dWLqAX3DgJENpZbQKBgQD8rXuquxBlp0RFUHIG\nomEO1ktImkCh9h+5/JcBtDHPocJsfD0QdWr39BHLBhZNlZ+U43HKUH/FJYIYnGNZ\n+quX1bajKASzALZVrS3aZTh6l4IWd9Xnkh/Q1tvEawot67gsAALgVswdBGhcU2x0\n7kseEeJl3aBPp5xwRA/K6ffoJQKBgQDTEfUnNHiw5UzKRkrwmlxLD9orkNOAwX29\nM7dcJD6ScUxZA+tiDfwdL9xaPDdYZiz5MLj24lYhjThBjE7DhtaCLt4w8jyb6gF7\nT1sdflhKqP8Bh5+TW9feG1kM05zNlL5srR6BzysNo45r0JnAf6bumEjYh00LZawu\noTIMqO5qnwKBgQCfy37X/DFkeCG+zB8wfuRuo6s8oQCa7LInxswg8bpGmv//55oe\nnIMniBzwjkrwid1AJY7C6aHEJfJeahiSwOpfvXIhQJ+oLJ0jFcBXy4eqT8KfPu3x\n4wFn61lUoHTxkY8JlIA9K+ctuqndKYz/bevnelv5G+3UMiXHAeQS6WA0WQKBgQCH\nwyM2xm9jCPptmO0W+ZKnzVh9cTg5tztTeXJVWBLPSwTatMSwW2Jwu5o2iEjpGT+Q\nQSCX3FmeVyF6N+9poM9VCSRtw0Hs34V4dUCcJepQi4cKytt/gzHEcT7EG1DegvBB\nItFemYyNx0gSXSioQvNywI0KiWyrCgjILXLt5bME7QKBgBsKjQmmOTHrWu7QNrDr\njByB6mdjiawtw/WvmgR5Vr3mdBKxXTAZrrKE+W27ZMh/x9b1+VHn16t26StVU5OS\nzM+55BqzHQkUO7ikTkdoMbUXLpzK2Pha7L8YT6nm+gVnqFMX+aRriaordYNclGZt\nvJuGTaI8O6aw/wWxXFmJxo4S\n-----END PRIVATE KEY-----\n",
+    "client_email": "google-sheets@wp-automation-475117.iam.gserviceaccount.com",
+    "client_id": "109454853175917774556",
+    "auth_uri": "https://accounts.google.com/o/oauth2/auth",
+    "token_uri": "https://oauth2.googleapis.com/token",
+    "auth_provider_x509_cert_url": "https://www.googleapis.com/oauth2/v1/certs",
+    "client_x509_cert_url": "https://www.googleapis.com/robot/v1/metadata/x509/google-sheets%40wp-automation-475117.iam.gserviceaccount.com",
+    "universe_domain": "googleapis.com"
+    }
+    """
+
 
     # Scopes define what the app can access
     SCOPES = [
@@ -177,6 +192,7 @@ class GoogleSheets:
     
 
     def __init__(self):
+        self.SERVICE_CRED_DICT = json.loads(os.environ["GOOGLE_CREDS_JSON"])
         self.TIME_STAMP_FIELD = os.getenv("GOOGLE_SHEETS_TIME_STAMP_FIELD")
 
     def get_sheet(self, sheet_name, work_sheet):
@@ -257,14 +273,15 @@ class GoogleSheets:
 class Genai():
 
   # Kullanılacak olan parametre ve değişkeneler
-  GOOGLE_API_KEY: str = os.getenv("GENAI_TOKEN")
+  
   MODEL_ID = "gemini-2.0-flash" 
   client = None
   chat = None
   safety_settings = None
 
   def __init__(self):
-    self.client = genai.Client(api_key=self.GOOGLE_API_KEY)
+    GOOGLE_API_KEY: str = os.getenv("GENAI_TOKEN")
+    self.client = genai.Client(api_key=GOOGLE_API_KEY)
     self.safety_settings = [
         types.SafetySetting(
             category="HARM_CATEGORY_DANGEROUS_CONTENT", # "HARM_CATEGORY_HARASSMENT", "HARM_CATEGORY_HATE_SPEECH", "HARM_CATEGORY_SEXUALLY_EXPLICIT","HARM_CATEGORY_CIVIC_INTEGRITY"
