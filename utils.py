@@ -166,7 +166,7 @@ class Operations:
 
 class GoogleSheets:
     # Path to your downloaded service account key
-    SERVICE_ACCOUNT_FILE = "gServiceAccountCredintial.json"
+    SERVICE_CRED_DICT = json.loads(os.environ["GOOGLE_CREDS_JSON"])
 
     # Scopes define what the app can access
     SCOPES = [
@@ -182,8 +182,8 @@ class GoogleSheets:
     def get_sheet(self, sheet_name, work_sheet):
         try:
             # Authenticate and create a client
-            creds = Credentials.from_service_account_file(
-                self.SERVICE_ACCOUNT_FILE, 
+            creds = Credentials.from_service_account_info(
+                self.SERVICE_CRED_DICT, 
                 scopes=self.SCOPES
             )
             client = gspread.authorize(creds)
