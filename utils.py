@@ -33,7 +33,7 @@ class Operations:
         
         return country, country_time
 
-    def send_message(self,phone_number, chat_history, provider, text, sheet, system_instruction, output_structure, genai):
+    def send_message(self,phone_number, provider, text, sheet, system_instruction, output_structure, genai, chat_history = None):
 
         message_text, meta_data = genai.generate_message(text, system_instruction, output_structure)
 
@@ -58,7 +58,11 @@ class Operations:
                 ]
         }]
 
-        chat_history = json.loads(chat_history).extend(new_part) if chat_history else new_part 
+        if chat_history:
+            chat_history = json.loads(chat_history)
+            chat_history.extend(new_part)
+        else:
+            chat_history = new_part 
 
 
         sheet.update_cell(
@@ -115,7 +119,7 @@ class Operations:
                         "chat_history": chat_history
                     })
 
-                    self.send_message(phone_number, chat_history, provider, text, sheet, system_instruction, Data, genai)
+                    self.send_message(phone_number, provider, text, sheet, system_instruction, Data, genai, chat_history)
 
 
     def send_Attention_Mes(self, customer, provider, sheet, genai):
@@ -160,7 +164,7 @@ class Operations:
             "chat_history": chat_history
         })
 
-        self.send_message(phone_number, chat_history, provider, text, sheet, system_instruction, Data, genai)
+        self.send_message(phone_number, provider, text, sheet, system_instruction, Data, genai, chat_history)
        
         
 
@@ -210,15 +214,24 @@ class GoogleSheets:
         except Exception as e:
             raise Exception(f"{__class__.__name__}.{self.get_sheet.__name__}() failed, Error: {e}")
 
-    def get_records_by(self, filters):
+    def get_records_by(self, filters = {}):
         records = self.sheet.get_all_records(default_blank= None)
         try:
-            return [
-                record
-                for record in records
-                for key,val in filters.items()
-                if key in record and record[key] == val
-            ]
+            output = []
+            for record in records:
+            
+                # Check for filters
+                for key,val in filters.items():
+                    if key in record and record[key] == val:
+                        # Check for non valid str's
+                        record = {
+                            key: (None if val in ["null",""] else val)
+                            for key, val in record.items()
+                        }        
+                
+                        output.append(record)
+
+            return output
         except Exception as e:
             raise Exception(f"{__class__.__name__}.{self.get_records_by.__name__}() failed, Error: {e}")                    
 
@@ -321,7 +334,7 @@ class Genai():
         history= chat_history
       )
 
-      response = chat.send_message(prompt)
+      response = self.chat.send_message(prompt)
 
       meta_data  = {}
       meta_data['input_tokens'] = getattr(response.usage_metadata, 'prompt_token_count', None)
