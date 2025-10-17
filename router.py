@@ -14,12 +14,11 @@ GENAI = Genai()
 OPERATIONS = Operations()
 
 # VARIABLES
-# Get environment variables
 VERIFY_TOKEN = os.getenv("WP_WEBHOOK_TOKEN")
 GS_STATUS_FIELD = os.getenv("GOOGLE_SHEETS_STATUS_FIELD")
 GS_PHONE_NUMBER_FIELD = os.getenv("GOOGLE_SHEETS_PHONENUMBER_FIELD")
 GS_TIME_STAMP_FIELD = os.getenv("GOOGLE_SHEETS_TIME_STAMP_FIELD")
-INTRODUCTION_GAP_SECOND = os.getenv("WP_INTRODUCTION_GAP_SEC")
+INTRODUCTION_GAP_SECOND = int(os.getenv("WP_INTRODUCTION_GAP_SEC"))
 WP_MESSAGE_ID_FIELD = os.getenv("WP_MESSAGE_ID_FIELD")
 
 # Connect to Google Sheeet
@@ -75,27 +74,29 @@ async def receive_webhook(request: Request):
         values = body["entry"][0]["changes"][0]["value"]       
 
         # Status Update Webhook
-        if "statuses" in values:
-            status  = values["statuses"][0]["status"]
-            message_id = values["statuses"][0]["id"]
-            id = int(values["statuses"][0]["recipient_id"])
-        
-            SHEET.update_cell(GS_PHONE_NUMBER_FIELD, id, GS_STATUS_FIELD, status, {WP_MESSAGE_ID_FIELD: message_id})
+        try:
+            if "statuses" in values:
+                status  = values["statuses"][0]["status"]
+                message_id = values["statuses"][0]["id"]
+                id = int(values["statuses"][0]["recipient_id"])
+            
+                SHEET.update_cell(GS_PHONE_NUMBER_FIELD, id, GS_STATUS_FIELD, status, {WP_MESSAGE_ID_FIELD: message_id})
 
-            if status == "read":
-                
-                unix_timestamp = int(datetime.now().timestamp())
-                record = SHEET.get_records_by({
-                    str(GS_PHONE_NUMBER_FIELD): id
-                })[0]
+                if status == "read":
+                    
+                    unix_timestamp = int(datetime.now().timestamp())
+                    record = SHEET.get_records_by({
+                        str(GS_PHONE_NUMBER_FIELD): id
+                    })[0]
 
-                if record.get(GS_STATUS_FIELD) != "answered":
+                    if record.get(GS_STATUS_FIELD) != "answered":
 
-                    time_gap = abs(unix_timestamp - record.get(GS_TIME_STAMP_FIELD, unix_timestamp)) # Calculate the gap between 'delivered' and 'read' stasuses, if somehow sheet doesnt contain time_stamp the gap will be 0 allway
+                        time_gap = abs(unix_timestamp - record.get(GS_TIME_STAMP_FIELD, unix_timestamp)) # Calculate the gap between 'delivered' and 'read' stasuses, if somehow sheet doesnt contain time_stamp the gap will be 0 allway
 
-                    if time_gap >= INTRODUCTION_GAP_SECOND:
-                        OPERATIONS.send_Attention_Mes(record, "wp", SHEET, GENAI)
-        
+                        if time_gap >= INTRODUCTION_GAP_SECOND:
+                            OPERATIONS.send_Attention_Mes(record, "wp", SHEET, GENAI)
+        except Exception as e:
+            raise Exception(f"the Status Hook have issue; ", e)
         if "messages" in values:
             message_id = values["messages"][0]["id"]
             id = values["messages"][0]["from"]
@@ -103,7 +104,7 @@ async def receive_webhook(request: Request):
             
 
     except Exception as e:
-        print(f"The error raised at POST endpoint of webhook, while getting status and recipient_id from body. Error: ", e)
+        print(f"The error raised at POST endpoint of webhook Error: ", e)
 
     print(body)
     return PlainTextResponse(status_code=200)
