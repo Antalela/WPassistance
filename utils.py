@@ -166,7 +166,7 @@ class Operations:
 
 class GoogleSheets:
     # Path to your downloaded service account key
-    SERVICE_CRED_DICT = json.loads(os.environ["GOOGLE_CREDS_JSON"])
+    SERVICE_CRED_DICT = json.loads(os.getenv("GOOGLE_CREDS_JSON"))
 
     # Scopes define what the app can access
     SCOPES = [
