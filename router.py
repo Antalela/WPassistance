@@ -9,7 +9,7 @@ import os, requests as req
 load_dotenv()
 app = FastAPI()
 GOOGLE_SHEETS = GoogleSheets()
-SHEET = None
+
 GENAI = Genai()
 OPERATIONS = Operations()
 
@@ -22,6 +22,11 @@ GS_TIME_STAMP_FIELD = os.getenv("GOOGLE_SHEETS_TIME_STAMP_FIELD")
 INTRODUCTION_GAP_SECOND = os.getenv("WP_INTRODUCTION_GAP_SEC")
 WP_MESSAGE_ID_FIELD = os.getenv("WP_MESSAGE_ID_FIELD")
 
+# Connect to Google Sheeet
+GS_SHEET_NAME        = os.getenv("GOOGLE_SHEETS_SHEET_NAME")
+GS_WORK_SHEET_NAME   = os.getenv("GOOGLE_SHEETS_WORK_SHEET_NAME")
+SHEET = GOOGLE_SHEETS.get_sheet(GS_SHEET_NAME, GS_WORK_SHEET_NAME)
+
 @app.post("/introduction")
 async def run_agent(request: Request):
     """
@@ -29,14 +34,10 @@ async def run_agent(request: Request):
     """
     body = await request.json()
     providers = body.get("providers", [])
-    sheet_name = body.get("google_sheet_name")
-    workS_name = body.get("google_work_sheet_name")
 
-    if not providers or not all([sheet_name, workS_name]):
-        raise HTTPException(status_code=400, detail="Missing fields!")
+    if not providers:
+        raise HTTPException(status_code=400, detail="Missing providers field!")
     try:
-        SHEET = GOOGLE_SHEETS.get_sheet(sheet_name, workS_name)
-        
         OPERATIONS.send_Introduction(providers, SHEET, GENAI)
 
         data = {"status": 200, "details": "Introduction been send"}
