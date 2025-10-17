@@ -197,7 +197,6 @@ class GoogleSheets:
 
     def __init__(self):
         self.SERVICE_CRED_DICT = json.loads(os.environ["GOOGLE_CREDS_JSON"])
-        self.TIME_STAMP_FIELD = os.getenv("GOOGLE_SHEETS_TIME_STAMP_FIELD")
 
     def get_sheet(self, sheet_name, work_sheet):
         try:
@@ -249,7 +248,6 @@ class GoogleSheets:
             try:
                 id_col = columns.index(id_column) + 1
                 upd_col = columns.index(column_to_update) + 1
-                ts_col = columns.index(self.TIME_STAMP_FIELD) + 1
 
                 if filters:
                     filters_cols = {
@@ -270,9 +268,6 @@ class GoogleSheets:
 
                     # Update the column_to_update cell
                     self.sheet.update_cell(row_idx, upd_col, new_value)
-
-                    unix_timestamp = int(datetime.now().timestamp())
-                    self.sheet.update_cell(row_idx, ts_col, unix_timestamp)
                     return True
 
             return f"No record found with '{id_column}'={id}"
