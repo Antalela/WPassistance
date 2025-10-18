@@ -68,10 +68,13 @@ async def receive_webhook(request: Request):
     POST route for receiving webhook events
     """
     body = await request.json()
+
     timestamp = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
     print(f"\n\nWebhook received {timestamp}\n")
+
     try:
-        values = body["entry"][0]["changes"][0]["value"]       
+        values = body["entry"][0]["changes"][0]["value"]
+        provider = values["messaging_product"]     
 
         # Status Update Webhook
         try:
@@ -104,16 +107,20 @@ async def receive_webhook(request: Request):
 
                         #if time_gap >= INTRODUCTION_GAP_SECOND: # send_Attention_Mes sets WP_MESSAGE_ID_FIELD with new id, and sets status as ignored to prevent it by sending 3. message
                         SHEET.update_cell(GS_PHONE_NUMBER_FIELD, id, GS_STATUS_FIELD, "ignored", {WP_MESSAGE_ID_FIELD: message_id})
-                        OPERATIONS.send_Attention_Mes(user, "wp", SHEET, GENAI)
+                        OPERATIONS.send_Attention_Mes(user, provider, SHEET, GENAI)
 
         except Exception as e:
             raise Exception(f"the Status Hook have issue; ", e)
         
         if "messages" in values:
             received_message_id = values["messages"][0]["id"]
+            text = values['messages'][0]['text']['body']
             id = values["messages"][0]["from"]
+            
 
             SHEET.update_cell(GS_PHONE_NUMBER_FIELD, id, GS_STATUS_FIELD, "answered")
+
+            OPERATIONS.send_Chat(text, id, provider, SHEET, GENAI)
             pass
             
 

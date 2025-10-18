@@ -14,7 +14,7 @@ class Operations:
 
     def __init__(self):
         self.PROVIDERS = {
-        "wp": Whatsapp()
+        "whatsapp": Whatsapp()
         }
         self.PHONE_NUMBER_FIELD = os.getenv("GOOGLE_SHEETS_PHONENUMBER_FIELD")
         self.NAME_FIELD = os.getenv("GOOGLE_SHEETS_NAME_FIELD")
@@ -34,7 +34,7 @@ class Operations:
         
         return country, country_time
 
-    def send_message(self,phone_number, provider, text, sheet, system_instruction, output_structure, genai, chat_history = None):
+    def send_message(self,phone_number, provider, text, sheet: "GoogleSheets", system_instruction, output_structure, genai: "Genai", chat_history = None):
 
         message_text, meta_data = genai.generate_message(text, system_instruction, output_structure)
 
@@ -72,7 +72,7 @@ class Operations:
             self.CHAT_HISTORY_FIELD, 
             json.dumps(chat_history, ensure_ascii=False))
 
-    def send_Introduction(self, providers, sheet, genai):
+    def send_Introduction(self, providers, sheet: "GoogleSheets", genai: "Genai"):
         # Çıktı formatı 
         class Data(BaseModel):
             message: str
@@ -118,11 +118,11 @@ class Operations:
                         "country": country,
                         "time": country_time,                   
                         "chat_history": chat_history
-                    })
+                    }, ensure_ascii=False)
 
                     self.send_message(phone_number, provider, text, sheet, system_instruction, Data, genai, chat_history)
 
-    def send_Attention_Mes(self, customer, provider, sheet, genai):
+    def send_Attention_Mes(self, customer, provider, sheet: "GoogleSheets", genai: "Genai"):
         
         time.sleep(self.INTRODUCTION_GAP_SEC)
         
@@ -165,11 +165,57 @@ class Operations:
             "country": country,
             "time": country_time,                   
             "chat_history": chat_history
-        })
+        }, ensure_ascii=False)
 
         self.send_message(phone_number, provider, text, sheet, system_instruction, Data, genai, chat_history)
        
-        
+    def send_Chat(self, received_text, phone_number, provider, sheet: "GoogleSheets", genai: "Genai"):
+    
+        class Data(BaseModel):
+            message: str
+
+        system_instruction = """
+            We are Longavita a company that provides vitamin products to our customers, improving their quality of life and health. Prepare an introductory message to establish a dialogue with our potential customer, to introduce our company and products. The language you use should target our customer. Use imput data (JSON) to personalize introduction message!
+
+            ⸻
+
+            Message Style
+            •	Tone: Friendly, approachable, and efficient. Use light humor when natural but stay professional.
+            •	Clarity: Use short, structured sentences with bullet points or numbered lists when helpful.
+            •	Efficiency: Minimize unnecessary back-and-forth by collecting multiple details together when possible.
+            •	Personalization: Use the user’s name and data where relevant.
+            •	Privacy: Mask sensitive information like emails or addresses in summaries (e.g., jo***@example.com).
+
+            ⸻
+
+            Key Rules
+            •	Always give the user a next step to keep the conversation flowing.
+            •	Do not add extra field,variables, and placeholders such as [your_prodact_name] to message! use only provided info.
+            •	The language you use should target our customer. Input propt will provide a customer phone number, use the area code of number to identify the customer's language and use that to generate a message.
+        """
+
+        customer = sheet.get_records_by({
+            str(self.PHONE_NUMBER_FIELD): phone_number
+        })[0]
+
+        provider = self.PROVIDERS.get(provider)
+
+        ch_str = customer.get(self.CHAT_HISTORY_FIELD, None)
+
+        ch_json = genai.json_to_chat_history(json.loads(ch_str)) if ch_str else None
+
+        message_text, new_chat_history, meta = genai.chat_message(received_text, system_instruction, Data, ch_json)
+
+        _, _ = provider.send(phone_number, message_text, False)
+
+        chat_history = genai.chat_history_to_str(new_chat_history)
+
+        sheet.update_cell(
+            self.PHONE_NUMBER_FIELD, 
+            phone_number, 
+            self.CHAT_HISTORY_FIELD, 
+            json.dumps(chat_history, ensure_ascii=False))
+
 
 class GoogleSheets:
     # Path to your downloaded service account key
@@ -300,7 +346,7 @@ class Genai():
   def chat_message(self, prompt, sys_instruction, res_schema, chat_history = None):
     try:
 
-      self.chat = self.client.chats.create(
+      chat = self.client.chats.create(
         model= self.MODEL_ID,
         config= types.GenerateContentConfig( # The doc of parametres -> https://googleapis.github.io/python-genai/genai.html#genai.types.GenerateContentConfig
             system_instruction= sys_instruction,
@@ -317,14 +363,16 @@ class Genai():
         history= chat_history
       )
 
-      response = self.chat.send_message(prompt)
+      response = chat.send_message(prompt)
+
+      json_data = json.loads(response.text)
 
       meta_data  = {}
       meta_data['input_tokens'] = getattr(response.usage_metadata, 'prompt_token_count', None)
       meta_data['output_tokens'] = getattr(response.usage_metadata, 'candidates_token_count', None)
 
-      if json_data := json.loads(response.text):
-        return json_data, meta_data
+      if message := json_data.get("message"):
+        return message, chat.get_history(), meta_data
       
       raise Exception("non-valid response from genai chat")
 
@@ -371,6 +419,11 @@ class Genai():
   # ---- Chat History to JSON.str ----
   @staticmethod
   def chat_history_to_str(chat_history):
+      
+      # croping chat history.
+      CHAT_LIMIT = os.getenv("WP_CHAT_MESSAGE_LIMIT")
+      chat_history = chat_history[2:] if len(chat_history) >= CHAT_LIMIT else chat_history
+
       data =  [
           {
               "role": item.role,
@@ -378,7 +431,7 @@ class Genai():
           }
           for item in chat_history
       ]
-      return json.dumps(data)
+      return json.dumps(data, ensure_ascii=False)
 
   # ---- JSON to Chat History ----
   @staticmethod
