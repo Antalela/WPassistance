@@ -207,13 +207,13 @@ class Operations:
                 raise Exception(f"failed to set variables, {e}")
             
             try:
-                ch_json = genai.json_to_chat_history(json.loads(ch_str)) if ch_str else None
+                ch_json = genai.json_to_chat_history(genai.safe_json_loads(ch_str)) if ch_str else None
 
                 message_text, new_chat_history, meta = genai.chat_message(received_text, system_instruction, Data, ch_json)
 
                 chat_history = genai.chat_history_to_str(new_chat_history)
             except Exception as e:
-                Exception(f"failed to get chat message and history, {e}")
+                raise Exception(f"failed to get chat message and history, {e}")
 
 
             _, _ = provider.send(phone_number, message_text, False)
@@ -239,8 +239,8 @@ class GoogleSheets:
     
 
     def __init__(self):
-        self.SERVICE_CRED_DICT = json.loads(os.environ["GOOGLE_CREDS_JSON"])
-       
+        #self.SERVICE_CRED_DICT = json.loads(os.environ["GOOGLE_CREDS_JSON"])
+        pass
         
     def get_sheet(self, sheet_name, work_sheet):
         try:
@@ -426,6 +426,22 @@ class Genai():
       print(f"❗ Genai Error: {e}")
       return None
 
+  @staticmethod
+  def safe_json_loads(data):
+    if isinstance(data, str):
+        try:
+            loaded = json.loads(data)
+            if isinstance(loaded, str):
+                # handle double-encoded case
+                return json.loads(loaded)
+            return loaded
+        except json.JSONDecodeError:
+            raise ValueError("Invalid JSON string")
+    elif isinstance(data, (list, dict)):
+        return data
+    else:
+        raise TypeError("Expected JSON string or list/dict")
+
   # ---- Chat History to JSON.str ----
   @staticmethod
   def chat_history_to_str(chat_history):
@@ -443,7 +459,7 @@ class Genai():
         ]
         return json.dumps(data, ensure_ascii=False)
     except Exception as e:
-        raise Exception(f" {Genai.__name__}.{Genai.json_to_chat_history.__name__}() failed with error {e}")
+        raise Exception(f" {Genai.__name__}.{Genai.chat_history_to_str.__name__}() failed with error {e}")
 
   # ---- JSON to Chat History ----
   @staticmethod
