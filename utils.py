@@ -206,9 +206,9 @@ class Operations:
 
         message_text, new_chat_history, meta = genai.chat_message(received_text, system_instruction, Data, ch_json)
 
-        _, _ = provider.send(phone_number, message_text, False)
-
         chat_history = genai.chat_history_to_str(new_chat_history)
+
+        _, _ = provider.send(phone_number, message_text, False)
 
         sheet.update_cell(
             self.PHONE_NUMBER_FIELD, 
@@ -421,7 +421,7 @@ class Genai():
   def chat_history_to_str(chat_history):
       
       # croping chat history.
-      CHAT_LIMIT = os.getenv("WP_CHAT_MESSAGE_LIMIT")
+      CHAT_LIMIT = int(os.getenv("WP_CHAT_MESSAGE_LIMIT"))
       chat_history = chat_history[2:] if len(chat_history) >= CHAT_LIMIT else chat_history
 
       data =  [
