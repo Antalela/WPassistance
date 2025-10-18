@@ -19,6 +19,7 @@ class Operations:
         self.PHONE_NUMBER_FIELD = os.getenv("GOOGLE_SHEETS_PHONENUMBER_FIELD")
         self.NAME_FIELD = os.getenv("GOOGLE_SHEETS_NAME_FIELD")
         self.CHAT_HISTORY_FIELD = os.getenv("WP_CHAT_HISTORY_FIELD")
+        self.INTRODUCTION_GAP_SEC = os.getenv("WP_INTRODUCTION_GAP_SEC")
 
     @staticmethod
     def get_number_data(number: str):
@@ -69,7 +70,7 @@ class Operations:
             self.PHONE_NUMBER_FIELD, 
             phone_number, 
             self.CHAT_HISTORY_FIELD, 
-            json.dumps(chat_history))
+            json.dumps(chat_history, ensure_ascii=False))
 
     def send_Introduction(self, providers, sheet, genai):
         # Çıktı formatı 
@@ -122,7 +123,9 @@ class Operations:
                     self.send_message(phone_number, provider, text, sheet, system_instruction, Data, genai, chat_history)
 
     def send_Attention_Mes(self, customer, provider, sheet, genai):
-        time.sleep(5)
+        
+        time.sleep(self.INTRODUCTION_GAP_SEC)
+        
         # Çıktı formatı 
         class Data(BaseModel):
             message: str
@@ -170,21 +173,20 @@ class Operations:
 
 class GoogleSheets:
     # Path to your downloaded service account key
-    """
+
     SERVICE_CRED_DICT = {
-    "type": "service_account",
-    "project_id": "wp-automation-475117",
-    "private_key_id": "8211f52c19258f0146e7f6317a83090774344583",
-    "private_key": "-----BEGIN PRIVATE KEY-----\nMIIEvgIBADANBgkqhkiG9w0BAQEFAASCBKgwggSkAgEAAoIBAQDt1UN0crQE1nZx\nf1ZQk3T3LaUm8bus8VmLh9KfAvARhA7VD8bhAdUQRMsC4D/1nue8OLGi5PbpPr0Z\n/9+ppcbCE/CKUCYpLo8/3RTyYQPVP+oIpbrW+VJr9kix83OTyjUgR9s9ZvaciqXR\n50PiSKY4QeQK/lNj8+EtuNDhDPl4P0LVjDIxLttd8idksQ2/b7q8gr/0QR1MYjCq\nslTYUn/Qjvq09GfnuzSEiD58fTpUTUrVai8vlj7sbZABIDwW7ysz0/KNlTHLm3Bs\n2jgXaonc2wMAj2U6xXQmrGhqNKHtVWlEUbUIZwLlTFxdjVmeJFz8pR8TJOCAZJEA\nG4jKr+Z7AgMBAAECggEAEVsLQZ+vOF0oJo8qztV75x/LGgTw86VnKfH+8kCmITkY\nVf8BPeFC2Z2TjQGtWTC/63HdsKvxwsKjzRZpjXk+AGKxHn7L0hyGMpxhD3D59SFl\nZD0n3dEy7RL7ahUAfav3ZYQo4Rm27GSHxkIQp54ylw9j41N85WHiMFJ417t5Jwee\nxbtsL43O8UpUkFXrYvyKAK+B2FxsVUSqnFl8GKWt66BdkBz3ldVyNqrabsf6i/T7\nhJFL8V4JSKmlb+yD+NFR28Brf0UI7GAMcM7098f0HM0ZuuNnYvmoEb6OFCvyc04K\nB63/+jr0R4umzJKtNFdg3omZAUZeFdzmLesa0mifWQKBgQD7AzRpx0WrLQBxjJUg\nPANe8eSrM18cA435aWvU5RQo7pdivSOuM9LAj8vkPCd9OX77glWKIhG0dGxH4czw\nhYCOS/97O8a7B2vYo/r11CeqSx1beXe/1mEnsjXg4BnO0o+Rw73QWLJpWLUrewoW\nxRJFbjAYzyZHTx1qTzE1vGKakwKBgQDyjwU4NY9yqxTi6AII7MxPF9vMOrngAZv9\nmpv82hIDoSfW5FRQh6pAFLBNo14LeU8S8RR08tyWUI7pqudHv+7HB1fkWNEoI0fg\nwGuKztBvYv/CqtDCdu/mCJHWpHdXkvi6vuj36uKG10sU7lErnZiZC+BLFVMS52jR\ne8XphhMteQKBgQCV+oY4pb401wCq1+rKhdEly7ZrrJgpbt5HpfuuCuoOwvBlKMnG\n7mQAdmrHBkI6Cj6bHHbrwAuAHQgNsxb2p232l+YgxciqO3buzJvIgmjo0VTLMTqh\nvv/x7gNPR9djwl/SInipojWHyF8Hic6vaDTQk1PdnvgqJ1VWDddDWjo4TQKBgQDt\nyqpqTY/g8bnbLWp5R3SQgapYkKYS5mEAAae0/jC04DPHZzcFb8rHYcDpjCQxiW6s\n+i187W616ioBCCwO2ioDcr6GvU/nUpcvzlRf05rh6CMmvAFG9AUB9hrLW5coAozX\nvztzeRE08jHIRk7LPIgSWmM8GJ7FpJnM7NO8uVVpuQKBgHDPXBleQL+aVV4D5fil\nwDZkkrhR7zMfCqVrKIoI5jFlso/uCHuBqztFaAhghHHIZkPVjDwEWeVT1+pu9mRY\nDaJEVWDc7O/bpeJXQ/rrYkvwxKFLYbnt4D7Jzj7E4LxI8Bmyom+pQfRxQc6PZddA\nNxnWpodSol6W0xBh8eUXxn73\n-----END PRIVATE KEY-----\n",
-    "client_email": "google-sheets@wp-automation-475117.iam.gserviceaccount.com",
-    "client_id": "109454853175917774556",
-    "auth_uri": "https://accounts.google.com/o/oauth2/auth",
-    "token_uri": "https://oauth2.googleapis.com/token",
-    "auth_provider_x509_cert_url": "https://www.googleapis.com/oauth2/v1/certs",
-    "client_x509_cert_url": "https://www.googleapis.com/robot/v1/metadata/x509/google-sheets%40wp-automation-475117.iam.gserviceaccount.com",
-    "universe_domain": "googleapis.com"
-    }
-    """
+  "type": "service_account",
+  "project_id": "wp-automation-475117",
+  "private_key_id": "d4d7531868b6d150e504fd411ac8cc630d11fd34",
+  "private_key": "-----BEGIN PRIVATE KEY-----\nMIIEvgIBADANBgkqhkiG9w0BAQEFAASCBKgwggSkAgEAAoIBAQDGro+MMDgVSkng\noZNvbQAUUVajqBxKKfTYVqA3Xm6HfM4qF4bK9eFsEt1OQaVCh1+S5XoJiqQTUu6z\njOPCa7xb7oAKbHbzlOgiExrunJYaG+WdpV0bnHGHQWu9CpL7Ji6RJJ/HWF8Q4i+E\nixxVcMNFOi8RruT/g+YZ4FkF7n/FK7JI/mC49hI75Ho/y0CQJpwpTqMb9et87yDq\nFU+Vf5r7ybCb3xTZ62L71T6BZHF9tb67IB5W+XJ4LsjnrcDO9zWYm9nUJYEes7wl\n7VZ3cuXQ3tI2QlImXUNGmXK1s3ZgwIT9JU2tZufjPedYaLy35u8EX6gTgNc/uIqw\nC7OcZHRxAgMBAAECggEAA1gugNGe+amSeZfx5c8T6hBxQOs0VRtEf9yVcQxdF/LF\n4neBUV4dbIOBlJVBghxjqd/EoIlKhPjBNxlVpcQvTrmpD7cO5lkvWMN+XiqzBb8X\nRZwVZ42VBUEL3nBhh2pd7LUmuDHvB726LXHNPEyPPO8WmiZmvG/5kGq/LnzHsdRb\nrpMB0mQrecoGZw9GorUBavNFxCfpCRIG6HTzPWD17ji27E3Uorbdy1+NSJC1xnuU\nZQXe536Jf6Aid93SSjiBSV5+J+vKH0eB4IQKnY0kIrFmuRdnDsXCRO4jwsPlNKS9\nVrmFeQC1YIRKf0kgaEP43CYSF0W1kOMHsQQBA9uwsQKBgQDh1DgEQZ6UdBGf9w+S\nAQuY6DETY2q09U6TpREwSLYJpOyiWguTNmOcgXWCqVJtX27yfR8tnX40hz2WDkrl\njzq30KkhqK+Dezg0AWGDDPagCuEO0RHE9EblGHwj8e5aAQ8JUK+m7Qgqh63BFTqZ\nkiap6i1yyWxva+Xi8zOu3OXMUwKBgQDhOdv9R1r04RgNdIbAejYWYr35q1hxJpGF\nFPfBMjGv+W3Gu/0+T11Ut4JL3/YvAND9e6sBTRp6VHA/qH7CXPneEMVY7q0GBd2n\nU0EHNjDhwEBEBgTkINGf1IpN/3DWE4ADgIqVRbYugB5k7AQRX8TV3/eVI+JF/sDi\nk1SrfIADqwKBgEhEDRjvlruS2QEDoqvqQbfQtcOqkL8PsPF2ZSW6XuZ/LGpXvlSB\nlybCFsSVQpdVbr+SYqPKPlS44nBeaoFDcFraHwVyYZgFmlqqBnZVc6aLVLHVHYaV\nVQqC51bpWIjcxd8JPux/9ZkGige7r2DtcAn3skuFQXn2YT5a7TML5U2ZAoGBAMmH\nzlM6UCciazVO+WytbkxlmnwXWBIXYsrkUjTrRw6hcBsOB7KDrY2qjsp54n14i4jl\n6cRGS9T+TVqI2LPuIh8UfqHvH59uDEI2+s8LLH40Ws0DXckLnMcZlY/pa/wCgt+f\nW2HqePPu7EN99L3fJfACcjVfYI8lP07+ahrwUlP1AoGBALDb6xTkmRhNUNJBqe4/\nDKEodNLGI0D9UGsK96BLcFqSOJh8QZXCL25K+DKgJ8b0HqDwTSEgmnKEu6Xu2jhm\ngT9SFnQyOf1qLQU5VLD9Ja3yYFHL5jRrh78+LG47lwnrrrQJWlOzgj94jo0n5rAd\nq52rVFe77Coeo3Ex6q6rOqVZ\n-----END PRIVATE KEY-----\n",
+  "client_email": "google-sheets@wp-automation-475117.iam.gserviceaccount.com",
+  "client_id": "109454853175917774556",
+  "auth_uri": "https://accounts.google.com/o/oauth2/auth",
+  "token_uri": "https://oauth2.googleapis.com/token",
+  "auth_provider_x509_cert_url": "https://www.googleapis.com/oauth2/v1/certs",
+  "client_x509_cert_url": "https://www.googleapis.com/robot/v1/metadata/x509/google-sheets%40wp-automation-475117.iam.gserviceaccount.com",
+  "universe_domain": "googleapis.com"
+}
 
 
 
@@ -197,7 +199,8 @@ class GoogleSheets:
     
 
     def __init__(self):
-        self.SERVICE_CRED_DICT = json.loads(os.environ["GOOGLE_CREDS_JSON"])
+        #self.SERVICE_CRED_DICT = json.loads(os.environ["GOOGLE_CREDS_JSON"])
+        pass
         
     def get_sheet(self, sheet_name, work_sheet):
         try:
