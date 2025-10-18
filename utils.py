@@ -268,7 +268,7 @@ class GoogleSheets:
         except Exception as e:
             raise Exception(f"{__class__.__name__}.{self.get_records_by.__name__}() failed, Error: {e}")                    
 
-    def update_cell(self, id_column, id, column_to_update, new_value, filters = {}):
+    def update_cell(self, id_column, id, column_to_update, new_value, filters: dict = None):
         """
         Updates 'column_to_update' column with 'new_value' where 'id_column' == 'record_id'.
         """
