@@ -239,8 +239,8 @@ class GoogleSheets:
     
 
     def __init__(self):
-        #self.SERVICE_CRED_DICT = json.loads(os.environ["GOOGLE_CREDS_JSON"])
-        pass
+        self.SERVICE_CRED_DICT = json.loads(os.environ["GOOGLE_CREDS_JSON"])
+        
         
     def get_sheet(self, sheet_name, work_sheet):
         try:
