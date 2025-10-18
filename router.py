@@ -3,7 +3,7 @@ from fastapi.responses import PlainTextResponse, JSONResponse
 from datetime import datetime
 from utils import GoogleSheets, Genai, Operations
 from dotenv import load_dotenv
-import os, requests as req  
+import os, asyncio
 
 # OBJECTS
 load_dotenv()
@@ -77,7 +77,7 @@ async def receive_webhook(request: Request):
         try:
             if "statuses" in values:
                 status  = values["statuses"][0]["status"]
-                timestamp = values["statuses"][0]["timestamp"]
+                timestamp = int(values["statuses"][0]["timestamp"])
                 message_id = values["statuses"][0]["id"]
                 id = int(values["statuses"][0]["recipient_id"])
             
@@ -95,17 +95,20 @@ async def receive_webhook(request: Request):
                     # If 'read' status came for 1. introduction message
                     if record.get(GS_STATUS_FIELD) not in ["answered", "ignored"]:
 
-                        time_gap = abs(timestamp - record.get(GS_TIME_STAMP_FIELD, timestamp)) # Calculate the gap between 'delivered' and 'read' stasuses, if somehow sheet doesnt contain time_stamp the gap will be 0 allway
+                        #time_gap = abs(timestamp - record.get(GS_TIME_STAMP_FIELD, timestamp)) # Calculate the gap between 'delivered' and 'read' stasuses, if somehow sheet doesnt contain time_stamp the gap will be 0 allway
 
-                        if time_gap >= INTRODUCTION_GAP_SECOND: # send_Attention_Mes sets WP_MESSAGE_ID_FIELD with new id, and sets status as ignored to prevent it by sending 3. message
-                            SHEET.update_cell(GS_PHONE_NUMBER_FIELD, id, GS_STATUS_FIELD, "ignored", {WP_MESSAGE_ID_FIELD: message_id})
+                        #if time_gap >= INTRODUCTION_GAP_SECOND: # send_Attention_Mes sets WP_MESSAGE_ID_FIELD with new id, and sets status as ignored to prevent it by sending 3. message
+                        SHEET.update_cell(GS_PHONE_NUMBER_FIELD, id, GS_STATUS_FIELD, "ignored", {WP_MESSAGE_ID_FIELD: message_id})
+                        asyncio.create_task(
                             OPERATIONS.send_Attention_Mes(record, "wp", SHEET, GENAI)
+                        )
 
                 else:
                     SHEET.update_cell(GS_PHONE_NUMBER_FIELD, id, GS_TIME_STAMP_FIELD, timestamp, {WP_MESSAGE_ID_FIELD: message_id})
 
         except Exception as e:
             raise Exception(f"the Status Hook have issue; ", e)
+        
         if "messages" in values:
             message_id = values["messages"][0]["id"]
             id = values["messages"][0]["from"]

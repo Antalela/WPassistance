@@ -7,7 +7,7 @@ from google import genai
 from google.genai import types
 from pydantic import BaseModel
 
-import json, gspread, phonenumbers, os
+import json, gspread, phonenumbers, os, time
 
 class Operations:
     
@@ -121,8 +121,8 @@ class Operations:
 
                     self.send_message(phone_number, provider, text, sheet, system_instruction, Data, genai, chat_history)
 
-
-    def send_Attention_Mes(self, customer, provider, sheet, genai):
+    async def send_Attention_Mes(self, customer, provider, sheet, genai):
+        time.sleep(5)
         # Çıktı formatı 
         class Data(BaseModel):
             message: str
@@ -174,8 +174,8 @@ class GoogleSheets:
     SERVICE_CRED_DICT = {
     "type": "service_account",
     "project_id": "wp-automation-475117",
-    "private_key_id": "1ddfd3a16247cc677aba8c11c5b546ae24c02e3f",
-    "private_key": "-----BEGIN PRIVATE KEY-----\nMIIEvgIBADANBgkqhkiG9w0BAQEFAASCBKgwggSkAgEAAoIBAQDQVLZrqBeI8www\nZl/3HJHn/h9Gjs9UnwB2Hqc29Fg2+dmPxuTwE392qNH9ZbhXEqSJrOWhjdmGwC7u\nxfZtVSgcit0CNv2khsdAvVy5uSd3nGws6PvCaVpNziiaYnvNfQifDU/rTY0xqklz\nIzKf3Its3+V/p4tGvTWFYlv7RtuRxMNpbmv23fOUMbMa13wsYk3SIJUinS/LrO0x\nlAU+10VLvlM6Aghg95CFduu4xG7X1L1iCBpAx/3ySThY3jk7/ls/KS7DzultEJYJ\nrZVC4WKkLno8HwJ8eg/VWbYq7/D6kk8Tz+Do+oKo7nJLf+8yesVlIYScGKiL+sk7\nJHYRfoD7AgMBAAECggEACuesRtVdKgOC61OoiVBbCNhB/dkC3EyYYxZ2rUc8COCq\nNT71g+WZYfYzS77T1+b3aud8e6jnroiHzGLbY9y1xUy1heSoAUE209o1rNkWykmL\nVgx6BTKrkfANKwulrFtzpJO3T7tW/TcLMjYw87JBMBlGM5jrDvBfiVRdOTl7y9T3\nGTpXojOcgEY12PfkZoDtbbhPAPYRE7A9fpKNUSxoj3KNCiHsGNVzx+a3cMMF/5KE\nG2DPRQ4bjm2ljsL4TpordewHFOH/KPyJkAcPH8qh+nI8dq1vFZQYiztGqmGlS9eA\nhD51DzMxG5fbNcbG5RU9CjhS85dWLqAX3DgJENpZbQKBgQD8rXuquxBlp0RFUHIG\nomEO1ktImkCh9h+5/JcBtDHPocJsfD0QdWr39BHLBhZNlZ+U43HKUH/FJYIYnGNZ\n+quX1bajKASzALZVrS3aZTh6l4IWd9Xnkh/Q1tvEawot67gsAALgVswdBGhcU2x0\n7kseEeJl3aBPp5xwRA/K6ffoJQKBgQDTEfUnNHiw5UzKRkrwmlxLD9orkNOAwX29\nM7dcJD6ScUxZA+tiDfwdL9xaPDdYZiz5MLj24lYhjThBjE7DhtaCLt4w8jyb6gF7\nT1sdflhKqP8Bh5+TW9feG1kM05zNlL5srR6BzysNo45r0JnAf6bumEjYh00LZawu\noTIMqO5qnwKBgQCfy37X/DFkeCG+zB8wfuRuo6s8oQCa7LInxswg8bpGmv//55oe\nnIMniBzwjkrwid1AJY7C6aHEJfJeahiSwOpfvXIhQJ+oLJ0jFcBXy4eqT8KfPu3x\n4wFn61lUoHTxkY8JlIA9K+ctuqndKYz/bevnelv5G+3UMiXHAeQS6WA0WQKBgQCH\nwyM2xm9jCPptmO0W+ZKnzVh9cTg5tztTeXJVWBLPSwTatMSwW2Jwu5o2iEjpGT+Q\nQSCX3FmeVyF6N+9poM9VCSRtw0Hs34V4dUCcJepQi4cKytt/gzHEcT7EG1DegvBB\nItFemYyNx0gSXSioQvNywI0KiWyrCgjILXLt5bME7QKBgBsKjQmmOTHrWu7QNrDr\njByB6mdjiawtw/WvmgR5Vr3mdBKxXTAZrrKE+W27ZMh/x9b1+VHn16t26StVU5OS\nzM+55BqzHQkUO7ikTkdoMbUXLpzK2Pha7L8YT6nm+gVnqFMX+aRriaordYNclGZt\nvJuGTaI8O6aw/wWxXFmJxo4S\n-----END PRIVATE KEY-----\n",
+    "private_key_id": "05ac5b238d5f3304f3ca48ac24afaaec9e5fc842",
+    "private_key": "-----BEGIN PRIVATE KEY-----\nMIIEvgIBADANBgkqhkiG9w0BAQEFAASCBKgwggSkAgEAAoIBAQCpjq4ZabpLeBK8\nJeLKgQ1uIju45YMUq77jj84Wk1UgosdUxw3YsfRf9KyYabKnzOC8k5p0IeJyrSR5\nafxqpHSeZKPqxEX/rntUFE2YiyGLKGmklVkIz6YzRzFk0ANBd3U3V1Lh+mzNOYm3\nRYhDVFYZ+Ktzq4i9D9X5dVubD/JXfatamncXXJHd0p/sdc+cRmM+rlWt6zeuSWYj\nGewKqeRxAtCfC2FxTVdxYGXCE9KooahH84VJzQoEvCqAKRUWaTzILMFjvB2DUA/V\nhUIGCOnog9Tryhp+6gICtn/EpAlUSBPMI9CVj4/9MnaHlOzROgdekVjRtDVv11OM\nSwdoKSlJAgMBAAECggEADGsm1TWpL13cAWvE8JADK83WEfS9ZQYvNPuTXJPt6DYD\n43Gw0e42t9Bz07XqH+Ahla454ceZjkygH0Rj+GuTHwa/+rHlbpSY88+I32NRUZ/k\nHOnTW5HZ2mecdoXFt0XIkAUVTPfKgD12mLW/BS9oHv7Xj+FAYpiGU38E9pZ0aXPs\nDGDZM1zDK3wOF5HIqeGqx+NQfvUrTEYYdXyououVfYHwh3k3we1IZRXpfcMZSNDY\ns55KGccv7ZN44UHZj+mbXTLo1lixDTxbxQcUxefQ2Ne5ogta0GNoByz+pELF5ATX\nOnUcOvp7gG1kB/pJ6Q3U0smlSllC0Ai37Vv8cU73AQKBgQDujZPx8SRmJUf2VrW6\n8l2fg3t0You8d+CzSR8ZEb4to4JtyRIWjpbarNATUzOrNK9/k4MsWR+VmctFkuuh\ngXx9xuohzNNKCyLm8/VoaoKdIfGUduEGi8HaOHgLsrplnXua9FdAzMRLT4jbBQBX\nz8Tf3CVZ8JMGEJSemt4E5eDgZwKBgQC19UwyJsE1hWILhmWdbZ/7iqkL1wR7IrU/\nCKPhGEObAt2BDcYiLz54X/Xxz3vwNEJKmZzXqBNWTAomYZMPpdKLcSOU2xg32L2+\n/mxXNU55HSdz/S2DHDY2lew5H32T/egIPYp/kPgmOtdzHfoHLJCS/xcVtNVjyHV7\nchIIoGTazwKBgQClIKF5R1fP0RyoG0t+lchS45uwa4qYsk57LDF3k/2V7+oX/qgj\nrx4jTp5V0jEg4L5ezAhvyV2Am83GYjXzPQOkuO1W6kaTqXPGdLa6SYgSJu3nvAZ2\nFoXgfVgzmMtIDaQDFgHT3CpAi1SLb0HWhv6bivLb+Bh9iTqnM0JeF5X7HwKBgBKC\nqMS1UpRqREYd3vp763mAaqAMuKT6K+wEqf89I6uCSBxX1V8m5TkDshZuYBJYjqHe\nLKl3rLfrtmCfLoG6Acgzs0XyX+1WfD8QzN62SoxhneDb0aRz20QETmqlPHYwr0kf\nUZaWndftxnssgoH2U6LQln2bztV+0AzF1vXPs1LbAoGBAK36zlX4uOhY/gN2g22b\nf24ljdceDfetkbObOCVLNINj+VpZtW7DmLVYg5mLhxZ0NXbrV3PSw8bV39J64mzP\n+jCW5oNmQkjIhyQiexW+ZH5r40JT+D8AgXufniXgyH1sacuA9iH4bxS+1roOPbbW\n3B3hzAXGV+jUYwvNFQuLdKnu\n-----END PRIVATE KEY-----\n",
     "client_email": "google-sheets@wp-automation-475117.iam.gserviceaccount.com",
     "client_id": "109454853175917774556",
     "auth_uri": "https://accounts.google.com/o/oauth2/auth",
@@ -185,6 +185,7 @@ class GoogleSheets:
     "universe_domain": "googleapis.com"
     }
     """
+
 
 
     # Scopes define what the app can access
@@ -197,7 +198,7 @@ class GoogleSheets:
 
     def __init__(self):
         self.SERVICE_CRED_DICT = json.loads(os.environ["GOOGLE_CREDS_JSON"])
-
+        
     def get_sheet(self, sheet_name, work_sheet):
         try:
             # Authenticate and create a client
