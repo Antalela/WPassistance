@@ -174,22 +174,6 @@ class Operations:
 class GoogleSheets:
     # Path to your downloaded service account key
 
-    SERVICE_CRED_DICT = {
-  "type": "service_account",
-  "project_id": "wp-automation-475117",
-  "private_key_id": "d4d7531868b6d150e504fd411ac8cc630d11fd34",
-  "private_key": "-----BEGIN PRIVATE KEY-----\nMIIEvgIBADANBgkqhkiG9w0BAQEFAASCBKgwggSkAgEAAoIBAQDGro+MMDgVSkng\noZNvbQAUUVajqBxKKfTYVqA3Xm6HfM4qF4bK9eFsEt1OQaVCh1+S5XoJiqQTUu6z\njOPCa7xb7oAKbHbzlOgiExrunJYaG+WdpV0bnHGHQWu9CpL7Ji6RJJ/HWF8Q4i+E\nixxVcMNFOi8RruT/g+YZ4FkF7n/FK7JI/mC49hI75Ho/y0CQJpwpTqMb9et87yDq\nFU+Vf5r7ybCb3xTZ62L71T6BZHF9tb67IB5W+XJ4LsjnrcDO9zWYm9nUJYEes7wl\n7VZ3cuXQ3tI2QlImXUNGmXK1s3ZgwIT9JU2tZufjPedYaLy35u8EX6gTgNc/uIqw\nC7OcZHRxAgMBAAECggEAA1gugNGe+amSeZfx5c8T6hBxQOs0VRtEf9yVcQxdF/LF\n4neBUV4dbIOBlJVBghxjqd/EoIlKhPjBNxlVpcQvTrmpD7cO5lkvWMN+XiqzBb8X\nRZwVZ42VBUEL3nBhh2pd7LUmuDHvB726LXHNPEyPPO8WmiZmvG/5kGq/LnzHsdRb\nrpMB0mQrecoGZw9GorUBavNFxCfpCRIG6HTzPWD17ji27E3Uorbdy1+NSJC1xnuU\nZQXe536Jf6Aid93SSjiBSV5+J+vKH0eB4IQKnY0kIrFmuRdnDsXCRO4jwsPlNKS9\nVrmFeQC1YIRKf0kgaEP43CYSF0W1kOMHsQQBA9uwsQKBgQDh1DgEQZ6UdBGf9w+S\nAQuY6DETY2q09U6TpREwSLYJpOyiWguTNmOcgXWCqVJtX27yfR8tnX40hz2WDkrl\njzq30KkhqK+Dezg0AWGDDPagCuEO0RHE9EblGHwj8e5aAQ8JUK+m7Qgqh63BFTqZ\nkiap6i1yyWxva+Xi8zOu3OXMUwKBgQDhOdv9R1r04RgNdIbAejYWYr35q1hxJpGF\nFPfBMjGv+W3Gu/0+T11Ut4JL3/YvAND9e6sBTRp6VHA/qH7CXPneEMVY7q0GBd2n\nU0EHNjDhwEBEBgTkINGf1IpN/3DWE4ADgIqVRbYugB5k7AQRX8TV3/eVI+JF/sDi\nk1SrfIADqwKBgEhEDRjvlruS2QEDoqvqQbfQtcOqkL8PsPF2ZSW6XuZ/LGpXvlSB\nlybCFsSVQpdVbr+SYqPKPlS44nBeaoFDcFraHwVyYZgFmlqqBnZVc6aLVLHVHYaV\nVQqC51bpWIjcxd8JPux/9ZkGige7r2DtcAn3skuFQXn2YT5a7TML5U2ZAoGBAMmH\nzlM6UCciazVO+WytbkxlmnwXWBIXYsrkUjTrRw6hcBsOB7KDrY2qjsp54n14i4jl\n6cRGS9T+TVqI2LPuIh8UfqHvH59uDEI2+s8LLH40Ws0DXckLnMcZlY/pa/wCgt+f\nW2HqePPu7EN99L3fJfACcjVfYI8lP07+ahrwUlP1AoGBALDb6xTkmRhNUNJBqe4/\nDKEodNLGI0D9UGsK96BLcFqSOJh8QZXCL25K+DKgJ8b0HqDwTSEgmnKEu6Xu2jhm\ngT9SFnQyOf1qLQU5VLD9Ja3yYFHL5jRrh78+LG47lwnrrrQJWlOzgj94jo0n5rAd\nq52rVFe77Coeo3Ex6q6rOqVZ\n-----END PRIVATE KEY-----\n",
-  "client_email": "google-sheets@wp-automation-475117.iam.gserviceaccount.com",
-  "client_id": "109454853175917774556",
-  "auth_uri": "https://accounts.google.com/o/oauth2/auth",
-  "token_uri": "https://oauth2.googleapis.com/token",
-  "auth_provider_x509_cert_url": "https://www.googleapis.com/oauth2/v1/certs",
-  "client_x509_cert_url": "https://www.googleapis.com/robot/v1/metadata/x509/google-sheets%40wp-automation-475117.iam.gserviceaccount.com",
-  "universe_domain": "googleapis.com"
-}
-
-
-
     # Scopes define what the app can access
     SCOPES = [
         "https://www.googleapis.com/auth/spreadsheets",
@@ -199,8 +183,8 @@ class GoogleSheets:
     
 
     def __init__(self):
-        #self.SERVICE_CRED_DICT = json.loads(os.environ["GOOGLE_CREDS_JSON"])
-        pass
+        self.SERVICE_CRED_DICT = json.loads(os.environ["GOOGLE_CREDS_JSON"])
+       
         
     def get_sheet(self, sheet_name, work_sheet):
         try:
