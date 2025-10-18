@@ -112,15 +112,18 @@ async def receive_webhook(request: Request):
         except Exception as e:
             raise Exception(f"the Status Hook have issue; ", e)
         
-        if "messages" in values:
-            text = values['messages'][0]['text']['body']
-            id = int(values["messages"][0]["from"])
-            
+        try:
+            if "messages" in values:
+                text = values['messages'][0]['text']['body']
+                id = int(values["messages"][0]["from"])
+                
 
-            SHEET.update_cell(GS_PHONE_NUMBER_FIELD, id, GS_STATUS_FIELD, "answered")
+                SHEET.update_cell(GS_PHONE_NUMBER_FIELD, id, GS_STATUS_FIELD, "answered")
 
-            OPERATIONS.send_Chat(text, id, provider, SHEET, GENAI)
- 
+                OPERATIONS.send_Chat(text, id, provider, SHEET, GENAI)
+        except Exception as e:
+            raise Exception(f"the Message Hook have issue; ", e)
+        
     except Exception as e:
         print(f"The error raised at POST endpoint of webhook Error: ", e)
 

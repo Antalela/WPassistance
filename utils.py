@@ -170,52 +170,61 @@ class Operations:
         self.send_message(phone_number, provider, text, sheet, system_instruction, Data, genai, chat_history)
        
     def send_Chat(self, received_text, phone_number, provider, sheet: "GoogleSheets", genai: "Genai"):
-    
-        class Data(BaseModel):
-            message: str
+        try:
 
-        system_instruction = """
-            We are Longavita a company that provides vitamin products to our customers, improving their quality of life and health. Prepare an introductory message to establish a dialogue with our potential customer, to introduce our company and products. The language you use should target our customer. Use imput data (JSON) to personalize introduction message!
+            class Data(BaseModel):
+                message: str
 
-            ⸻
+            system_instruction = """
+                We are Longavita a company that provides vitamin products to our customers, improving their quality of life and health. Prepare an introductory message to establish a dialogue with our potential customer, to introduce our company and products. The language you use should target our customer. Use imput data (JSON) to personalize introduction message!
 
-            Message Style
-            •	Tone: Friendly, approachable, and efficient. Use light humor when natural but stay professional.
-            •	Clarity: Use short, structured sentences with bullet points or numbered lists when helpful.
-            •	Efficiency: Minimize unnecessary back-and-forth by collecting multiple details together when possible.
-            •	Personalization: Use the user’s name and data where relevant.
-            •	Privacy: Mask sensitive information like emails or addresses in summaries (e.g., jo***@example.com).
+                ⸻
 
-            ⸻
+                Message Style
+                •	Tone: Friendly, approachable, and efficient. Use light humor when natural but stay professional.
+                •	Clarity: Use short, structured sentences with bullet points or numbered lists when helpful.
+                •	Efficiency: Minimize unnecessary back-and-forth by collecting multiple details together when possible.
+                •	Personalization: Use the user’s name and data where relevant.
+                •	Privacy: Mask sensitive information like emails or addresses in summaries (e.g., jo***@example.com).
 
-            Key Rules
-            •	Always give the user a next step to keep the conversation flowing.
-            •	Do not add extra field,variables, and placeholders such as [your_prodact_name] to message! use only provided info.
-            •	The language you use should target our customer. Input propt will provide a customer phone number, use the area code of number to identify the customer's language and use that to generate a message.
-        """
+                ⸻
 
-        customer = sheet.get_records_by({
-            str(self.PHONE_NUMBER_FIELD): phone_number
-        })[0]
+                Key Rules
+                •	Always give the user a next step to keep the conversation flowing.
+                •	Do not add extra field,variables, and placeholders such as [your_prodact_name] to message! use only provided info.
+                •	The language you use should target our customer. Input propt will provide a customer phone number, use the area code of number to identify the customer's language and use that to generate a message.
+            """
 
-        provider = self.PROVIDERS.get(provider)
+            try:
+                customer = sheet.get_records_by({
+                    str(self.PHONE_NUMBER_FIELD): phone_number
+                })[0]
 
-        ch_str = customer.get(self.CHAT_HISTORY_FIELD, None)
+                provider = self.PROVIDERS.get(provider)
 
-        ch_json = genai.json_to_chat_history(json.loads(ch_str)) if ch_str else None
+                ch_str = customer.get(self.CHAT_HISTORY_FIELD, None)
+            except Exception as e:
+                raise Exception(f"failed to set variables, {e}")
+            
+            try:
+                ch_json = genai.json_to_chat_history(json.loads(ch_str)) if ch_str else None
 
-        message_text, new_chat_history, meta = genai.chat_message(received_text, system_instruction, Data, ch_json)
+                message_text, new_chat_history, meta = genai.chat_message(received_text, system_instruction, Data, ch_json)
 
-        chat_history = genai.chat_history_to_str(new_chat_history)
+                chat_history = genai.chat_history_to_str(new_chat_history)
+            except Exception as e:
+                Exception(f"failed to get chat message and history, {e}")
 
-        _, _ = provider.send(phone_number, message_text, False)
 
-        sheet.update_cell(
-            self.PHONE_NUMBER_FIELD, 
-            phone_number, 
-            self.CHAT_HISTORY_FIELD, 
-            json.dumps(chat_history, ensure_ascii=False))
+            _, _ = provider.send(phone_number, message_text, False)
 
+            sheet.update_cell(
+                self.PHONE_NUMBER_FIELD, 
+                phone_number, 
+                self.CHAT_HISTORY_FIELD, 
+                json.dumps(chat_history, ensure_ascii=False))
+        except Exception as e:
+            raise Exception(f" {self.__class__.__name__}.{self.update_cell.__name__}() failed with error {e}")
 
 class GoogleSheets:
     # Path to your downloaded service account key
@@ -307,7 +316,7 @@ class GoogleSheets:
             return f"No record found with '{id_column}'={id}"
 
         except Exception as e:
-            raise Exception(e)
+            raise Exception(f" {self.__class__.__name__}.{self.update_cell.__name__}() failed with error {e}")
 
 
 # TODO:
@@ -419,28 +428,33 @@ class Genai():
   # ---- Chat History to JSON.str ----
   @staticmethod
   def chat_history_to_str(chat_history):
-      
-      # croping chat history.
-      CHAT_LIMIT = int(os.getenv("WP_CHAT_MESSAGE_LIMIT"))
-      chat_history = chat_history[2:] if len(chat_history) >= CHAT_LIMIT else chat_history
+    try:
+        # croping chat history.
+        CHAT_LIMIT = int(os.getenv("WP_CHAT_MESSAGE_LIMIT"))
+        chat_history = chat_history[2:] if len(chat_history) >= CHAT_LIMIT else chat_history
 
-      data =  [
-          {
-              "role": item.role,
-              "parts": [{"text": p.text} for p in item.parts],
-          }
-          for item in chat_history
-      ]
-      return json.dumps(data, ensure_ascii=False)
+        data =  [
+            {
+                "role": item.role,
+                "parts": [{"text": p.text} for p in item.parts],
+            }
+            for item in chat_history
+        ]
+        return json.dumps(data, ensure_ascii=False)
+    except Exception as e:
+        raise Exception(f" {Genai.__name__}.{Genai.json_to_chat_history.__name__}() failed with error {e}")
 
   # ---- JSON to Chat History ----
   @staticmethod
   def json_to_chat_history(json_history):
-      restored = []
-      for item in json_history:
-          parts = [types.Part(text=p["text"]) for p in item["parts"]]
-          if item["role"] == "user":
-              restored.append(types.UserContent(parts=parts))
-          else:
-              restored.append(types.Content(parts=parts, role="model"))
-      return restored
+    try:
+        restored = []
+        for item in json_history:
+            parts = [types.Part(text=p["text"]) for p in item["parts"]]
+            if item["role"] == "user":
+                restored.append(types.UserContent(parts=parts))
+            else:
+                restored.append(types.Content(parts=parts, role="model"))
+        return restored
+    except Exception as e:
+        raise Exception(f" {Genai.__name__}.{Genai.json_to_chat_history.__name__}() failed with error {e}")
