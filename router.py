@@ -99,9 +99,8 @@ async def receive_webhook(request: Request):
 
                         #if time_gap >= INTRODUCTION_GAP_SECOND: # send_Attention_Mes sets WP_MESSAGE_ID_FIELD with new id, and sets status as ignored to prevent it by sending 3. message
                         SHEET.update_cell(GS_PHONE_NUMBER_FIELD, id, GS_STATUS_FIELD, "ignored", {WP_MESSAGE_ID_FIELD: message_id})
-                        asyncio.create_task(
-                            OPERATIONS.send_Attention_Mes(record, "wp", SHEET, GENAI)
-                        )
+                        OPERATIONS.send_Attention_Mes(record, "wp", SHEET, GENAI)
+                        
 
                 else:
                     SHEET.update_cell(GS_PHONE_NUMBER_FIELD, id, GS_TIME_STAMP_FIELD, timestamp, {WP_MESSAGE_ID_FIELD: message_id})
@@ -112,6 +111,8 @@ async def receive_webhook(request: Request):
         if "messages" in values:
             message_id = values["messages"][0]["id"]
             id = values["messages"][0]["from"]
+
+            SHEET.update_cell(GS_PHONE_NUMBER_FIELD, id, GS_STATUS_FIELD, "answered", {WP_MESSAGE_ID_FIELD: message_id})
             pass
             
 
