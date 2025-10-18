@@ -19,7 +19,7 @@ class Operations:
         self.PHONE_NUMBER_FIELD = os.getenv("GOOGLE_SHEETS_PHONENUMBER_FIELD")
         self.NAME_FIELD = os.getenv("GOOGLE_SHEETS_NAME_FIELD")
         self.CHAT_HISTORY_FIELD = os.getenv("WP_CHAT_HISTORY_FIELD")
-        self.INTRODUCTION_GAP_SEC = os.getenv("WP_INTRODUCTION_GAP_SEC")
+        self.INTRODUCTION_GAP_SEC = int(os.getenv("WP_INTRODUCTION_GAP_SEC"))
 
     @staticmethod
     def get_number_data(number: str):
