@@ -223,8 +223,9 @@ class Operations:
                 phone_number, 
                 self.CHAT_HISTORY_FIELD, 
                 json.dumps(chat_history, ensure_ascii=False))
+            
         except Exception as e:
-            raise Exception(f" {self.__class__.__name__}.{self.update_cell.__name__}() failed with error {e}")
+            raise Exception(f" {self.__class__.__name__}.{self.send_Chat.__name__}() failed with error {e}")
 
 class GoogleSheets:
     # Path to your downloaded service account key
